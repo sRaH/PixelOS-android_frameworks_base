@@ -3037,6 +3037,31 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT, userId);
     }
 
+    public boolean isSuperPermissionEnabled(String packageName, int userId) {
+        mContext.enforceCallingOrSelfPermission(Manifest.permission.MANAGE_APP_OPS_MODES,
+                "isSuperPermissionEnabled");
+        snapshotComputer().enforceCrossUserPermission(Binder.getCallingUid(), userId,
+                false, false, "isSuperPermissionEnabled");
+        final PackageManagerInternal packageManagerInternal =
+                LocalServices.getService(PackageManagerInternal.class);
+        return SuperPermissionStore.getInstance().isEnabledOrDeclared(
+                packageName, userId, packageManagerInternal);
+    }
+
+    public void setSuperPermissionEnabled(String packageName, int userId, boolean enabled) {
+        mContext.enforceCallingOrSelfPermission(Manifest.permission.MANAGE_APP_OPS_MODES,
+                "setSuperPermissionEnabled");
+        snapshotComputer().enforceCrossUserPermission(Binder.getCallingUid(), userId,
+                false, false, "setSuperPermissionEnabled");
+        final PackageManagerInternal packageManagerInternal =
+                LocalServices.getService(PackageManagerInternal.class);
+        if (packageManagerInternal.getPackageUid(packageName, 0, userId) < 0) {
+            throw new IllegalArgumentException(
+                    "Unknown package " + packageName + " for user " + userId);
+        }
+        SuperPermissionStore.getInstance().setEnabled(packageName, userId, enabled);
+    }
+
     public String getSdkSandboxPackageName() {
         return mRequiredSdkSandboxPackage;
     }

@@ -228,6 +228,16 @@ public abstract class IPackageManagerBase extends IPackageManager.Stub {
     }
 
     @Override
+    public final boolean isSuperPermissionEnabled(String packageName, int userId) {
+        return mService.isSuperPermissionEnabled(packageName, userId);
+    }
+
+    @Override
+    public final void setSuperPermissionEnabled(String packageName, int userId, boolean enabled) {
+        mService.setSuperPermissionEnabled(packageName, userId, enabled);
+    }
+
+    @Override
     @Deprecated
     public final int checkSignatures(@NonNull String pkg1, @NonNull String pkg2, int userId) {
         return snapshot().checkSignatures(pkg1, pkg2, userId);
