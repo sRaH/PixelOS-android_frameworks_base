@@ -320,6 +320,8 @@ class PackageManagerShellCommand extends ShellCommand {
                     return runGrantRevokePermission(true);
                 case "revoke":
                     return runGrantRevokePermission(false);
+                case "super-permission":
+                    return runSuperPermission();
                 case "reset-permissions":
                     return runResetPermissions();
                 case "set-permission-flags":
@@ -2784,6 +2786,60 @@ class PackageManagerShellCommand extends ShellCommand {
         return 0;
     }
 
+    private int runSuperPermission() throws RemoteException {
+        final int callingUid = Binder.getCallingUid();
+        if (callingUid != Process.ROOT_UID && callingUid != Process.SHELL_UID) {
+            throw new SecurityException("super-permission requires root or shell");
+        }
+
+        int userId = UserHandle.USER_SYSTEM;
+        String option;
+        while ((option = getNextOption()) != null) {
+            if ("--user".equals(option)) {
+                userId = UserHandle.parseUserArg(getNextArgRequired());
+            } else {
+                getErrPrintWriter().println("Error: unknown option: " + option);
+                return 1;
+            }
+        }
+        userId = translateUserId(userId, UserHandle.USER_NULL, "runSuperPermission");
+
+        final String packageName = getNextArg();
+        if (packageName == null) {
+            getErrPrintWriter().println("Error: no package specified");
+            return 1;
+        }
+        if (mPm.getPackageUid(packageName, 0, userId) < 0) {
+            getErrPrintWriter().println("Error: package not found for user " + userId);
+            return 1;
+        }
+
+        final String value = getNextArg();
+        final SuperPermissionStore store = SuperPermissionStore.getInstance();
+        if (value == null || "get".equals(value)) {
+            getOutPrintWriter().println(
+                    store.isEnabledOrDeclared(packageName, userId, mPm));
+            return 0;
+        }
+        final boolean enabled;
+        if ("true".equals(value) || "enable".equals(value)) {
+            enabled = true;
+        } else if ("false".equals(value) || "disable".equals(value)) {
+            enabled = false;
+        } else {
+            getErrPrintWriter().println(
+                    "Error: value must be one of get, true, false, enable, or disable");
+            return 1;
+        }
+        if (getNextArg() != null) {
+            getErrPrintWriter().println("Error: too many arguments");
+            return 1;
+        }
+        store.setEnabled(packageName, userId, enabled);
+        getOutPrintWriter().println(enabled);
+        return 0;
+    }
+
     private List<String> getRequestedRuntimePermissions(PackageInfo info) {
         // No requested permissions
         if (info.requestedPermissions == null) {
@@ -5198,6 +5254,9 @@ class PackageManagerShellCommand extends ShellCommand {
         pw.println("    must be declared as used in the app's manifest, be runtime permissions");
         pw.println("    (protection level dangerous), and the app targeting SDK greater than Lollipop MR1.");
         pw.println("    The flags must be one or more of " + SUPPORTED_PERMISSION_FLAGS_LIST);
+        pw.println("");
+        pw.println("  super-permission [--user USER_ID] PACKAGE [get|true|false|enable|disable]");
+        pw.println("    Query or change the persistent Super permissions flag for a package.");
         pw.println("");
         pw.println("  reset-permissions");
         pw.println("    Revert all runtime permissions to their default state.");

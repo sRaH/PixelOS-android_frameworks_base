@@ -866,4 +866,10 @@ interface IPackageManager {
     List<String> getAllApexDirectories();
 
     int getAppUidForPrivateComputeCoreUid(int pccUid);
+
+    /** Returns the effective Super permissions state for a package and user. */
+    boolean isSuperPermissionEnabled(String packageName, int userId);
+
+    /** Sets an explicit Super permissions override for a package and user. */
+    void setSuperPermissionEnabled(String packageName, int userId, boolean enabled);
 }
