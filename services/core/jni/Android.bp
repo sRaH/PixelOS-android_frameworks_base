@@ -51,6 +51,7 @@ cc_library_static {
         "com_android_server_locksettings_SyntheticPasswordManager.cpp",
         "com_android_server_power_PowerManagerService.cpp",
         "com_android_server_powerstats_PowerStatsService.cpp",
+        "com_android_server_pm_KernelSuSuperPermissionBridge.cpp",
         "com_android_server_power_stats_CpuPowerStatsCollector.cpp",
         "com_android_server_hint_HintManagerService.cpp",
         "com_android_server_soundtrigger_middleware_AudioSessionProviderImpl.cpp",
