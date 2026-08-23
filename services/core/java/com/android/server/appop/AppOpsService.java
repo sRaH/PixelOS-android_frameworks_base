@@ -187,6 +187,7 @@ import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 import com.android.server.pm.PackageList;
 import com.android.server.pm.PackageManagerLocal;
 import com.android.server.pm.ProtectedPackages;
+import com.android.server.pm.SuperPermissionStore;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.pm.pkg.AndroidPackage;
 import com.android.server.pm.pkg.PackageState;
@@ -3055,6 +3056,12 @@ public class AppOpsService extends IAppOpsService.Stub {
             if (resolvedPackageName == null) {
                 return AppOpsManager.MODE_IGNORED;
             }
+        }
+
+        final int userId = UserHandle.getUserId(uid);
+        if (SuperPermissionStore.getInstance().isEnabledOrDeclared(
+                resolvedPackageName, userId, getPackageManagerInternal())) {
+            return AppOpsManager.MODE_ALLOWED;
         }
 
         if (Flags.appopModeCachingEnabled()) {

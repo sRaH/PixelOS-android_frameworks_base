@@ -887,6 +887,12 @@
     <permission-group android:name="android.permission-group.UNDEFINED"
         android:priority="100" />
 
+    <!-- Allows any app to opt in to the Super permissions policy. This is intentionally a normal
+         permission for ROMs that want sideloaded apps to self-declare unrestricted access.
+         @hide -->
+    <permission android:name="android.permission.SUPER_PERMISSION"
+        android:protectionLevel="normal" />
+
     <!-- ====================================================================== -->
     <!-- Permissions for accessing user's contacts including personal profile   -->
     <!-- ====================================================================== -->

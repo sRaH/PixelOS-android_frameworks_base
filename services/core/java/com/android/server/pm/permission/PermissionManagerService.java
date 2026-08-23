@@ -81,6 +81,7 @@ import com.android.server.LocalServices;
 import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 import com.android.server.pm.PackageManagerService;
 import com.android.server.pm.PackageMetrics;
+import com.android.server.pm.SuperPermissionStore;
 import com.android.server.pm.UserManagerService;
 import com.android.server.pm.permission.PermissionManagerServiceInternal.CheckPermissionDelegate;
 import com.android.server.pm.permission.PermissionManagerServiceInternal.HotwordDetectionServiceProvider;
@@ -228,6 +229,11 @@ public class PermissionManagerService extends IPermissionManager.Stub {
         if (packageName == null || permissionName == null) {
             return PackageManager.PERMISSION_DENIED;
         }
+        if (!Manifest.permission.SUPER_PERMISSION.equals(permissionName)
+                && SuperPermissionStore.getInstance().isEnabledOrDeclared(
+                        packageName, userId, mPackageManagerInt)) {
+            return PackageManager.PERMISSION_GRANTED;
+        }
 
         final CheckPermissionDelegate checkPermissionDelegate;
         synchronized (mLock) {
@@ -251,6 +257,11 @@ public class PermissionManagerService extends IPermissionManager.Stub {
         }
 
         String persistentDeviceId = getPersistentDeviceId(deviceId);
+        if (!Manifest.permission.SUPER_PERMISSION.equals(permissionName)
+                && SuperPermissionStore.getInstance().isEnabledOrDeclaredForUid(
+                        uid, mPackageManagerInt)) {
+            return PackageManager.PERMISSION_GRANTED;
+        }
 
         final CheckPermissionDelegate checkPermissionDelegate;
         synchronized (mLock) {
