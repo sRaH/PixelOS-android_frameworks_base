@@ -1795,6 +1795,8 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 PackagePartitions.FINGERPRINT, Build.IS_ENG, Build.IS_USERDEBUG,
                 Build.VERSION.SDK_INT, Build.VERSION.INCREMENTAL, Build.VERSION.SDK_INT_FULL);
 
+        KernelSuSuperPermissionBridge.start();
+
         t.traceEnd(); // "create package manager"
 
         final CompatChange.ChangeListener selinuxChangeListener = packageName -> {
@@ -3060,6 +3062,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                     "Unknown package " + packageName + " for user " + userId);
         }
         SuperPermissionStore.getInstance().setEnabled(packageName, userId, enabled);
+        KernelSuSuperPermissionBridge.syncPackage(packageName, userId);
     }
 
     public String getSdkSandboxPackageName() {
