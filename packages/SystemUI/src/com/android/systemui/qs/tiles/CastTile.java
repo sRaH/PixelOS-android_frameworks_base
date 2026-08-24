@@ -147,6 +147,11 @@ public class CastTile extends QSTileImpl<BooleanState> {
     }
 
     @Override
+    public boolean isAvailable() {
+        return mContext.getResources().getBoolean(R.bool.config_show_cast_sender);
+    }
+
+    @Override
     public void handleSetListening(boolean listening) {
         super.handleSetListening(listening);
         if (DEBUG) Log.d(TAG, "handleSetListening " + listening);
