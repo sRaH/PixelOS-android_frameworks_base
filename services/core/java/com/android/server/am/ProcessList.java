@@ -182,6 +182,7 @@ import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.am.psc.ProcessStateController;
 import com.android.server.am.psc.UidRecordInternal;
 import com.android.server.compat.PlatformCompat;
+import com.android.server.pm.SuperPermissionStore;
 import com.android.server.pm.pkg.AndroidPackage;
 import com.android.server.pm.pkg.PackageStateInternal;
 import com.android.server.privatecompute.PccSandboxManagerInternal;
@@ -1859,6 +1860,13 @@ public final class ProcessList extends ProcessListInternal
 
         try {
             final int userId = UserHandle.getUserId(app.uid);
+            if (!app.isolated && SuperPermissionStore.getInstance().isEnabledOrDeclaredForUid(
+                    app.uid, mService.getPackageManagerInternal())) {
+                // Hidden API enforcement is configured by Zygote when the process is forked.
+                // Keep this process-local so unflagged apps retain the platform policy.
+                disableHiddenApiChecks = true;
+                disableTestApiChecks = true;
+            }
             try {
                 AppGlobals.getPackageManager().checkPackageStartable(app.info.packageName, userId);
             } catch (RemoteException e) {
