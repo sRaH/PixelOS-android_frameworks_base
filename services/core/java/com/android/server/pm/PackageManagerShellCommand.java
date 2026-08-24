@@ -2836,6 +2836,7 @@ class PackageManagerShellCommand extends ShellCommand {
             return 1;
         }
         store.setEnabled(packageName, userId, enabled);
+        KernelSuSuperPermissionBridge.syncPackage(packageName, userId);
         getOutPrintWriter().println(enabled);
         return 0;
     }
