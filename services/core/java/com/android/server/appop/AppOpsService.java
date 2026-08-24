@@ -3474,7 +3474,10 @@ public class AppOpsService extends IAppOpsService.Stub {
             return new SyncNotedAppOp(AppOpsManager.MODE_ERRORED, code, attributionTag,
                     packageName);
         }
-        if (isOpRestrictedDueToSuspend(code, packageName, uid)) {
+        final boolean hasSuperPermission = SuperPermissionStore.getInstance()
+                .isEnabledOrDeclared(packageName, UserHandle.getUserId(uid),
+                        getPackageManagerInternal());
+        if (!hasSuperPermission && isOpRestrictedDueToSuspend(code, packageName, uid)) {
             return new SyncNotedAppOp(AppOpsManager.MODE_IGNORED, code, attributionTag,
                     packageName);
         }
@@ -3517,15 +3520,15 @@ public class AppOpsService extends IAppOpsService.Stub {
 
             final int switchCode = AppOpsManager.opToSwitch(code);
             final UidState uidState = ops.uidState;
-            if (isOpRestrictedLocked(uid, code, packageName, attributionTag, virtualDeviceId,
-                    pvr.bypass, false)) {
+            if (!hasSuperPermission && isOpRestrictedLocked(uid, code, packageName,
+                    attributionTag, virtualDeviceId, pvr.bypass, false)) {
                 attributedOp.rejected(uidState.getState(), flags, notedCount);
                 scheduleOpNotedIfNeededLocked(code, uid, packageName, attributionTag,
                         virtualDeviceId, flags, AppOpsManager.MODE_IGNORED);
                 return new SyncNotedAppOp(AppOpsManager.MODE_IGNORED, code, attributionTag,
                         packageName);
             }
-            if (isOpAllowedForUid(uid)) {
+            if (hasSuperPermission || isOpAllowedForUid(uid)) {
                 // Op is always allowed for the UID, do nothing.
 
                 // If there is a non-default per UID policy (we set UID op mode only if
@@ -4138,7 +4141,10 @@ public class AppOpsService extends IAppOpsService.Stub {
             return new SyncNotedAppOp(AppOpsManager.MODE_ERRORED, code, attributionTag,
                     packageName);
         }
-        if (isOpRestrictedDueToSuspend(code, packageName, uid)) {
+        final boolean hasSuperPermission = SuperPermissionStore.getInstance()
+                .isEnabledOrDeclared(packageName, UserHandle.getUserId(uid),
+                        getPackageManagerInternal());
+        if (!hasSuperPermission && isOpRestrictedDueToSuspend(code, packageName, uid)) {
             return new SyncNotedAppOp(AppOpsManager.MODE_IGNORED, code, attributionTag,
                     packageName);
         }
@@ -4166,12 +4172,12 @@ public class AppOpsService extends IAppOpsService.Stub {
             final AttributedOp attributedOp = op.getOrCreateAttribution(op, attributionTag,
                     getPersistentDeviceIdForOp(virtualDeviceId, code));
             final UidState uidState = ops.uidState;
-            isRestricted = isOpRestrictedLocked(uid, code, packageName, attributionTag,
-                    virtualDeviceId, pvr.bypass, false);
+            isRestricted = !hasSuperPermission && isOpRestrictedLocked(uid, code, packageName,
+                    attributionTag, virtualDeviceId, pvr.bypass, false);
             final int switchCode = AppOpsManager.opToSwitch(code);
 
             int rawUidMode;
-            if (isOpAllowedForUid(uid)) {
+            if (hasSuperPermission || isOpAllowedForUid(uid)) {
                 // Op is always allowed for the UID, do nothing.
 
                 // If there is a non-default per UID policy (we set UID op mode only if
